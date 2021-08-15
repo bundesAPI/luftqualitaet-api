@@ -1,11 +1,442 @@
-openapi: "3.0.0"
+openapi: 3.0.0
 info:
-  description: "Umweltbundesamt: Luftqualität"
-  version: "1.0.0"
-  title: "Umweltbundesamt: Luftqualität"
-
-
-
+  title: 'Umweltbundesamt: Luftqualität'
+  description: Schnittstellendaten der [Luftdaten](https://www.umweltbundesamt.de/daten/luft/luftdaten)-Seite des Umweltbundesamtes
+  version: 2.0.0
+servers:
+  - url: https://www.umweltbundesamt.de/api/air_data/v2
 externalDocs:
-  description: "Website"
-  url: "https://www.umweltbundesamt.de/daten/luft/luftdaten/luftqualitaet/eJzrWJSSuMrIwMhQ18BC19BwUUnmQvNFeakLFhWXLFic4lYElzMwWZwSko-sNLeKY1FuctPinMSS0w6eJUxH3upuXJyTl37aQaVSgoGBgREAIkMhMA=="
+  description: 'Website'
+  url: 'https://www.umweltbundesamt.de/daten/luft/luftdaten'
+
+paths:
+  /stations/{format}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/format'
+        - $ref: '#/components/parameters/use'
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/date_from'
+        - $ref: '#/components/parameters/date_to'
+        - $ref: '#/components/parameters/time_from'
+        - $ref: '#/components/parameters/time_to'
+        - name: index
+          in: query
+          schema:
+            type: string
+            enum:
+              - id
+              - code
+          description: Index der als Schlüsselwert für die Datenausgabe genutzt werden soll
+      summary: Stationen
+      description: Liste der Wetterstationen
+      responses:
+        '200':
+          description: Liste von Stationen
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  request:
+                    $ref: '#/components/schemas/RequestData'
+                  indices:
+                    $ref: '#/components/schemas/IndexArrayData'
+                  data:
+                    type: object
+                    properties:
+                      request_index:
+                        $ref: '#/components/schemas/StationArrayData'
+                  count:
+                    type: integer
+                    example: 1
+  /meta/{format}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/format'
+        - $ref: '#/components/parameters/use'
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/date_from'
+        - $ref: '#/components/parameters/date_to'
+        - $ref: '#/components/parameters/time_from'
+        - $ref: '#/components/parameters/time_to'
+      summary: Meta-Informationen
+      description: |
+        Meta-Informationen für die andere Schnittstellen.
+        
+        Nicht alle Parameter sind bei allen Schnittstellen nützlich/notwendig, weshalb
+        in folgender Tabelle die passenden `use`-Parameter und restlichen Parameter gelistet
+        werden.
+        
+        | `use`           | Parameter                                              |
+        |-----------------|--------------------------------------------------------|
+        | `airquality`    | `lang`, `date_from`, `date_to`, `time_from`, `time_to` |
+        | `annualbalance` | `lang`                                                 |
+        | `map`           | `lang`                                                 |
+        | `measure`       | `lang`, `date_from`, `date_to`, `time_from`, `time_to` |
+        | `transgression` | `lang`                                                 |
+        
+      responses:
+        '200':
+          description: |
+            Die Ausgabe ist abhängig von dem an `use` übergebenen Wert.
+            
+            Da der Renderer für OpenAPI Specs es nicht unterstützt mehrere Response-Arten
+            korrekt auszugeben kann man entweder unter "Schema" das komplette Schema sehen oder
+            am Seitenende in "Schemas" die Definitionen aller `*MetaResponse`-Objekte betrachten
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AirQualityMetaResponse'
+                  - $ref: '#/components/schemas/AnnualBalanceMetaResponse'
+                  - $ref: '#/components/schemas/MapMetaResponse'
+                  - $ref: '#/components/schemas/MeasureMetaResponse'
+                  - $ref: '#/components/schemas/TransgressionMetaResponse'
+components:
+  parameters:
+    format:
+      name: format
+      in: path
+      required: true
+      schema:  
+        type: string
+        enum:
+          - json
+          - xml
+      description: Rückgabeformat, XML wird zwar unterstützt aber keine Schnittstelle hat dies implementiert
+    use:
+      name: use
+      in: query
+      schema:
+        type: string
+        enum:
+          - airquality
+          - annualbalance
+          - map
+          - measure
+          - transgression
+      description: Angabe der genutzten Schnittstelle (vermutlich um Daten evtl. anzupassen)
+    lang:
+      name: lang
+      in: query
+      schema:
+        type: string
+        enum:
+          - de
+          - en
+      description: Sprache in der die Datensätze zurückgegeben werden
+    date_from:
+      name: date_from
+      in: query
+      schema:
+        type: string
+        format: date
+        example: '2021-08-14'
+      description: Startdatum für Datensätze
+    date_to:
+      name: date_to
+      in: query
+      schema:
+        type: string
+        format: date
+        example: '2021-08-15'
+      description: Enddatum für Datensätze
+    time_from:
+      name: time_from
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 24
+        example: 1
+      description: Startstundenzeit für Datensätze
+    time_to:
+      name: time_to
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 24
+        example: 24
+      description: Endstundenzeit für Datensätze
+
+  schemas:
+    RequestData:
+      type: object
+      properties: {}
+      description: An die Schnittstelle übergebenen Parameter
+    IndexArrayData:
+      type: array
+      items: {}
+      description: Beschreibung der Datenstruktur in `data` als Array
+      example:
+        - station id
+        - station code
+        - station name
+        - station city
+        - station synonym
+        - station active from
+        - station active to
+        - station longitude
+        - station latitude
+        - network id
+        - station setting id
+        - station type id
+        - network code
+        - network name
+        - station setting name
+        - station setting short name
+        - station type name
+        - station street
+        - station street nr
+        - station zip code
+    StationArrayData:
+      type: array
+      items:
+        oneOf:
+          - type: string
+          - type: integer
+      example: 
+        - '7'
+        - DEBB007
+        - Elsterwerda, 1992-2020
+        - Elsterwerda
+        - ELBA
+        - '1992-09-01'
+        - null
+        - '13.5268'
+        - '51.4627'
+        - '4'
+        - '2'
+        - '1'
+        - BB
+        - Brandenburg
+        - vorstädtisches Gebiet
+        - vorstädtisch
+        - Hintergrund
+        - Lauchhammerstr.
+        - ''
+        - '04910'
+      description: Stationsdaten als Array, sortiert nach der Angabe in `indices`
+    ComponentArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - '1'
+        - PM10
+        - PM₁₀
+        - µg/m³
+        - Feinstaub
+    ScopeArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - '1'
+        - 1TMW
+        - day
+        - '86400'
+        - '0'
+        - Tagesmittel
+    AirQualityLimitArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - '7'
+        - '2016-01-01 00:00:00'
+        - '2021-01-18 12:00:00'
+    AnnualBalanceLimitArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - 2002
+        - 1
+    MeasureLimitArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - '1'
+        - '1'
+        - '52'
+        - '2016-01-01 11:00:00'
+        - '2021-08-14 11:00:00'
+    NetworkArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - '1'
+        - BW
+        - Baden-Württemberg
+    XrefArrayData:
+      type: array
+      items:
+        type: string
+      example:
+        - '1'
+        - '1'
+        - '1'
+        - '1'
+        - '0'
+
+    AirQualityMetaResponse:
+      type: object
+      properties: 
+        request:
+          $ref: '#/components/schemas/RequestData'
+        components:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ComponentArrayData'
+        scopes:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ScopeArrayData'
+        limits:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/AirQualityLimitArrayData'
+        stations:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/StationArrayData'
+        networks:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/NetworkArrayData'
+    AnnualBalanceMetaResponse:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/RequestData'
+        limits:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/AnnualBalanceLimitArrayData'
+        components:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ComponentArrayData'
+        stations:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/StationArrayData'
+        networks:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/NetworkArrayData'
+        years:
+          type: array
+          items:
+            type: string
+          example:
+            - '2002'
+            - '2007'
+            - '2008'
+            - '2009'
+            - '2010'
+            - '2011'
+            - '2012'
+            - '2013'
+            - '2014'
+            - '2015'
+            - '2016'
+            - '2017'
+            - '2018'
+            - '2019'
+            - '2020'
+            - '2003'
+            - '2004'
+            - '2005'
+            - '2006'
+            - '2000'
+            - '2001'
+    MapMetaResponse:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/RequestData'
+        components:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ComponentArrayData'
+        scopes:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ScopeArrayData'
+        xref:
+          type: array
+          items:
+            $ref: '#/components/schemas/XrefArrayData'
+    MeasureMetaResponse:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/RequestData'
+        components:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ComponentArrayData'
+        scopes:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ScopeArrayData'
+        limits:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/MeasureLimitArrayData'
+        stations:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/StationArrayData'
+        networks:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/NetworkArrayData'
+        xref:
+          type: array
+          items:
+            $ref: '#/components/schemas/XrefArrayData'
+    TransgressionMetaResponse:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/RequestData'
+        components:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/ComponentArrayData'
+        networks:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/NetworkArrayData'
+        stations:
+          type: object
+          properties:
+            index:
+              $ref: '#/components/schemas/StationArrayData'
