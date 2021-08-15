@@ -1,0 +1,11 @@
+openapi: "3.0.0"
+info:
+  description: "Umweltbundesamt: Luftqualität"
+  version: "1.0.0"
+  title: "Umweltbundesamt: Luftqualität"
+
+
+
+externalDocs:
+  description: "Website"
+  url: "https://www.umweltbundesamt.de/daten/luft/luftdaten/luftqualitaet/eJzrWJSSuMrIwMhQ18BC19BwUUnmQvNFeakLFhWXLFic4lYElzMwWZwSko-sNLeKY1FuctPinMSS0w6eJUxH3upuXJyTl37aQaVSgoGBgREAIkMhMA=="
