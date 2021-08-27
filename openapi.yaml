@@ -196,6 +196,7 @@ components:
     StationArrayData:
       type: array
       items:
+        nullable: true
         oneOf:
           - type: string
           - type: integer
@@ -253,7 +254,9 @@ components:
     AnnualBalanceLimitArrayData:
       type: array
       items:
-        type: string
+        oneOf:
+          - type: string
+          - type: integer
       example:
         - 2002
         - 1
