@@ -113,7 +113,7 @@ paths:
             example: 2019
           description: Jahr für welches die Jahresbilanz ausgegeben werden soll
         - $ref: '#/components/parameters/lang'
-          
+      summary: Jahresbilanzen
       responses:
         '200':
           description: |
