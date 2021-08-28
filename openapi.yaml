@@ -93,6 +93,48 @@ paths:
                   - $ref: '#/components/schemas/MapMetaResponse'
                   - $ref: '#/components/schemas/MeasureMetaResponse'
                   - $ref: '#/components/schemas/TransgressionMetaResponse'
+  /annualbalances/ajaxdata:
+    get:
+      parameters:
+        - name: component
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 1
+          description: Komponente für welche die Jahresbilanzen ausgegeben werden sollen
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 2019
+          description: Jahr für welches die Jahresbilanz ausgegeben werden soll
+        - $ref: '#/components/parameters/lang'
+          
+      responses:
+        '200':
+          description: |
+            Die Ausgabe der Jahresbilanzen.
+            
+            Die Felder in `data` sind je nach angegebenem `component` unterschiedlich. Am besten nachzuvollziehen welche Felder es gibt ist es anhand von `headers` in welchem die Tabellen-Header als Mapping passend zu den Datenfeldern mit ausgegeben werden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AnnualBalanceData'
+                  headers:
+                    $ref: '#/components/schemas/AnnualBalanceHeaders'
+                  lastDate:
+                    type: string
+                    example: '20.10.2020'
+
 components:
   parameters:
     format:
@@ -287,6 +329,43 @@ components:
         - '1'
         - '1'
         - '0'
+
+    AnnualBalanceData:
+      type: object
+      properties:
+        netname:
+          type: string
+          example: 'Baden-Württemberg'
+        stacode:
+          type: string
+          example: 'DEBW004'
+        staname:
+          type: string
+          example: 'Eggenstein'
+        stasetname:
+          type: string
+          example: 'ländlich stadtnah'
+        statypname:
+          type: string
+          example: 'Hintergrund'
+    AnnualBalanceHeaders:
+      type: object
+      properties:
+        netname:
+          type: string
+          example: 'net_name'
+        stacode:
+          type: string
+          example: 'sta_code'
+        staname:
+          type: string
+          example: 'sta_name'
+        stasetname:
+          type: string
+          example: 'staset_name'
+        statypname:
+          type: string
+          example: 'statyp_name'
 
     AirQualityMetaResponse:
       type: object
