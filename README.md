@@ -52,10 +52,62 @@ Das ist notwendig, da ein Großteil der Schnittstellendaten nicht als Objekte/Ke
 
 `indices` kann aber nicht nur ein Array sein, sondern auch ein genestetes Objekt in dem Felder und dann wieder enthaltene Arrays beschrieben werden, um auch komplexere Datenstrukturen aufzuschlüsseln.
 
+### Rückgabefeld: `headers`
+
+Einige Schnittstellen (bspw. Überschreitungen) enthalten tabellarische Daten, und wie der Name bereits suggeriert werden in diesem Feld die Tabellenüberschriften zu den Datenfeldern angegeben.
+
+Manche der Felder enthalten nur einen Kürzel wie z.B. `sta_name`, während andere Felder komplette Beschreibungen enthalten. Erstere sind Felder die über Requests hinweg gleich sind und in der Anwendung übersetzt sind, und das nur der Schlüssel für die Übersetzung ist.
+
 ### Rückgabefeld: `request`
 
 Jede Antwort der Schnittstellen enthält ein Objekt `request` welches die Requestparameter die übergeben wurden, oder die von der Schnittstelle genutzten Standardwerte enthält.
 
 ## Schnittstellen
 
-TODO
+### `/stations/{format}` - Stationen
+
+Genutzt auf:
+* [Aktuelle Luftdaten - Luftqualität](https://www.umweltbundesamt.de/daten/luft/luftdaten/luftqualitaet)
+* [Aktuelle Luftdaten - Stationen](https://www.umweltbundesamt.de/daten/luft/luftdaten/stationen)
+
+
+### `/meta/{format}` - Meta
+
+Genutzt auf: _Allen Luftdaten-Seiten_
+
+### `/maps/{format}` - Karten
+
+Genutzt auf: [Aktuelle Luftdaten - Karten](https://www.umweltbundesamt.de/daten/luft/luftdaten/karten)
+
+Diese Schnittstelle enthält eigentlich nur Zusatzinformationen zu den Karten, welche unter einem anderen Endpunkt/Bildpfad erreichbar sind, dieser setzt sich folgendermaßen zusammen:
+
+```
+https://www.umweltbundesamt.de/sites/default/files/w21ad_luftdaten/maps/{component}/{scope}/{version}/{component}_{scope}_{version}_{date}.png
+```
+
+* `component`: Der Name eines Schadstoffs, kann aus der Meta-Schnittstelle entnommen werden
+* `scope`: Name der Auswertungsart
+* `version`: Ist immer `v1`
+* `date`: Datum für die Karte im Format `YYYYMMDD`
+
+Beispiel: 
+
+```
+https://www.umweltbundesamt.de/sites/default/files/w21ad_luftdaten/maps/O3/1SMW_MAX/v1/O3_1SMW_MAX_v1_20210829.png
+```
+
+### `/measures/{format}` - Stationen
+
+Genutzt auf: [Aktuelle Luftdaten - Stationen](https://www.umweltbundesamt.de/daten/luft/luftdaten/stationen)
+
+### `/airquality/{format}` - Luftqualität
+
+Genutzt auf: [Aktuelle Luftdaten - Luftqualität](https://www.umweltbundesamt.de/daten/luft/luftdaten/luftqualitaet)
+
+### `/annualbalances/ajaxdata` - Jahresbilanzen
+
+Genutzt auf: [Aktuelle Luftdaten - Jahresbilanzen](https://www.umweltbundesamt.de/daten/luft/luftdaten/jahresbilanzen)
+
+### `/transgressions/ajaxdata` - Überschreitungen
+
+Genutzt auf: [Aktuelle Luftdaten - Überschreitungen](https://www.umweltbundesamt.de/daten/luft/luftdaten/ueberschreitungen)
