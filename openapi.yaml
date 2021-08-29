@@ -534,7 +534,7 @@ components:
       type: object
       properties: {}
       example:
-        21:
+        '21':
           '2021-08-14 11:00:00':
             - 3
             - 3
