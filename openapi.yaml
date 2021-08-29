@@ -259,6 +259,35 @@ paths:
                   lastDate:
                     type: string
                     example: '20.10.2020'
+  /airquality/{format}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/format'
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/date_from'
+        - $ref: '#/components/parameters/date_to'
+        - $ref: '#/components/parameters/time_from'
+        - $ref: '#/components/parameters/time_to'
+      summary: Luftqualität
+      responses:
+        '200':
+          description: |
+            Ausgabe der Luftqualitätsdaten.
+            
+            Die Felder in `data` werden mithilfe der Struktur innerhalb `indices` beschrieben, hiermit sind die Felder und Werte am besten ersichtlich.
+            
+            (Die hier gezeigten Beispieldaten in `indices` entsprechen nicht der Schnittstelle, es sind Daten anderer Schnittstellen die hier als generelles Beispiel genutzt werden)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request:
+                    $ref: '#/components/schemas/RequestData'
+                  data:
+                    $ref: '#/components/schemas/AirQualityData'
+                  indices:
+                    $ref: '#/components/schemas/IndexObjectData'
 
 components:
   parameters:
@@ -541,6 +570,30 @@ components:
             - 113
             - '2021-08-14 12:00:00'
             - '6'
+            
+    AirQualityData:
+      type: object
+      properties: {}
+      example:
+        '21':
+          '2021-08-11 00:00:00':
+            - 0
+            - 0
+            -
+              - 1
+              - 9
+              - 0
+              - '0.450'
+            -
+              - 3
+              - 47
+              - 0
+              - '0.783'
+            -
+              - 5
+              - 6
+              - 0
+              - '0.300'
 
     AirQualityMetaResponse:
       type: object
