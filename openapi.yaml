@@ -135,14 +135,7 @@ paths:
         - $ref: '#/components/parameters/date_from'
         - $ref: '#/components/parameters/time_from'
         - $ref: '#/components/parameters/component'
-        - name: scope
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int32
-            example: 1
-          description: Auswertungsart nach der gefiltert werden soll
+        - $ref: '#/components/parameters/scope'
       summary: Karten
       responses:
         '200':
@@ -178,7 +171,6 @@ paths:
                           type: integer
                           format: int32
                           example: 180
-                        
   /maps/{component}/{scope}/{version}/{component}_{scope}_{version}_{date}.png:
     get:
       servers:
@@ -222,6 +214,32 @@ paths:
           content:
             image/png:
               example: https://www.umweltbundesamt.de/sites/default/files/w21ad_luftdaten/maps/O3/1SMW_MAX/v1/O3_1SMW_MAX_v1_20210829.png
+  /measures/{format}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/format'
+        - $ref: '#/components/parameters/date_from'
+        - $ref: '#/components/parameters/date_to'
+        - $ref: '#/components/parameters/time_from'
+        - $ref: '#/components/parameters/time_to'
+        - $ref: '#/components/parameters/component'
+        - $ref: '#/components/parameters/scope'
+      summary: Messungen
+      responses:
+        '200':
+          description: Ausgabe der Messdaten
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request:
+                    $ref: '#/components/schemas/RequestData'
+                  indices:
+                    $ref: '#/components/schemas/IndexObjectData'
+                  data:
+                    $ref: '#/components/schemas/MeasuresData'
+                  
 
 components:
   parameters:
@@ -301,6 +319,15 @@ components:
         format: int32
         example: 1
       description: Luftschadstoff nachdem gefiltert werden soll
+    scope:
+      name: scope
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 1
+      description: Auswertungsart nach der gefiltert werden soll
   schemas:
     RequestData:
       type: object
@@ -331,6 +358,18 @@ components:
         - station street
         - station street nr
         - station zip code
+    IndexObjectData:
+      type: object
+      properties: {}
+      example:
+        data:
+          'station id':
+            'date start':
+              - 'component id'
+              - 'scope id'
+              - 'value'
+              - 'date end'
+              - 'index'
     StationArrayData:
       type: array
       items:
@@ -462,6 +501,18 @@ components:
         statypname:
           type: string
           example: 'statyp_name'
+    
+    MeasuresData:
+      type: object
+      properties: {}
+      example:
+        21:
+          '2021-08-14 11:00:00':
+            - 3
+            - 3
+            - 113
+            - '2021-08-14 12:00:00'
+            - '6'
 
     AirQualityMetaResponse:
       type: object
