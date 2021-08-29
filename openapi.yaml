@@ -159,10 +159,10 @@ paths:
                     properties:
                       min:
                         type: string
-                        example: 0
+                        example: '0'
                       max:
                         type: string
-                        example: 0
+                        example: '0'
                   thresholds:
                     type: array
                     items:
@@ -170,7 +170,7 @@ paths:
                       properties:
                         count:
                           type: string
-                          example: 0
+                          example: '0'
                         name:
                           type: string
                           example: 'der Informationschwelle'
