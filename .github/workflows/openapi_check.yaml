@@ -11,7 +11,7 @@ jobs:
         - name: "Create spectral file if it not exists"
           continue-on-error: true
           run: |
-             set -C; echo "extends: spectral:oas3" > .spectral.yaml
+             set -C; echo "extends: spectral:oas" > .spectral.yaml
 
         # Run Spectral
         - uses: stoplightio/spectral-action@v0.8.1

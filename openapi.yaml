@@ -1,751 +1,1325 @@
 openapi: 3.0.0
 info:
-  title: 'Umweltbundesamt: Luftqualität'
-  description: Schnittstellendaten der [Luftdaten](https://www.umweltbundesamt.de/daten/luft/luftdaten)-Seite des Umweltbundesamtes
-  version: 2.0.0
+  contact:
+    email: immission@uba.de
+    name: API Support
+  description: Air data API of Umweltbundesamt
+  title: Umweltbundesamt Air Data API
+  version: 2.0.1
 servers:
-  - url: https://www.umweltbundesamt.de/api/air_data/v2
-externalDocs:
-  description: 'Website'
-  url: 'https://www.umweltbundesamt.de/daten/luft/luftdaten'
-
-paths:
-  /stations/{format}:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/format'
-        - $ref: '#/components/parameters/use'
-        - $ref: '#/components/parameters/lang'
-        - $ref: '#/components/parameters/date_from'
-        - $ref: '#/components/parameters/date_to'
-        - $ref: '#/components/parameters/time_from'
-        - $ref: '#/components/parameters/time_to'
-        - name: index
-          in: query
-          schema:
-            type: string
-            enum:
-              - id
-              - code
-          description: Index der als Schlüsselwert für die Datenausgabe genutzt werden soll
-      summary: Stationen
-      description: Liste der Wetterstationen
-      responses:
-        '200':
-          description: Liste von Stationen
-          content:
-            application/json:
-              schema: 
+  - url: 'https://www.umweltbundesamt.de/api/air_data/v2'
+    description: Public API
+tags:
+  - name: metadata
+    x-displayName: Meta data
+  - name: airquality
+    x-displayName: Air quality
+  - name: measurements
+    x-displayName: Measurements
+  - name: exceedances
+    x-displayName: Exceedances
+  - name: annualtabulation
+    x-displayName: Annual tabulation
+components:
+  parameters:
+    component:
+      name: component
+      description: Id of component
+      in: query
+      required: false
+      schema:
+        type: integer
+      example: 1
+    componentReq:
+      name: component
+      description: Id of component
+      in: query
+      required: true
+      schema:
+        type: integer
+      example: 1
+    date:
+      name: date
+      description: A date
+      in: query
+      required: false
+      schema:
+        format: YYYY-MM-DD
+        type: string
+      example: '2019-01-01'
+    dateFromAq:
+      name: date_from
+      description: A date (required only for use = airquality)
+      in: query
+      required: false
+      schema:
+        format: YYYY-MM-DD
+        type: string
+      example: '2019-01-01'
+    dateToAq:
+      name: date_to
+      description: A date (required only for use = airquality)
+      in: query
+      required: false
+      schema:
+        format: YYYY-MM-DD
+        type: string
+      example: '2019-01-01'
+    dateFromReq:
+      name: date_from
+      description: A date
+      in: query
+      required: true
+      schema:
+        format: YYYY-MM-DD
+        type: string
+      example: '2019-01-01'
+    dateToReq:
+      name: date_to
+      description: A date
+      in: query
+      required: true
+      schema:
+        format: YYYY-MM-DD
+        type: string
+      example: '2019-01-01'
+    index:
+      name: index
+      description: The type of index to be used
+      in: query
+      required: false
+      schema:
+        default: id
+        enum:
+          - id
+          - code
+      example: code
+    lang:
+      name: lang
+      description: The language code
+      in: query
+      required: false
+      schema:
+        type: string
+        default: en
+        enum:
+          - en
+          - de
+      example: de
+    scope:
+      name: scope
+      description: Id of scope
+      in: query
+      schema:
+        type: integer
+      example: 2
+    station:
+      name: station
+      description: Id of station
+      in: query
+      schema:
+        type: integer
+      example: 769
+    stationReq:
+      name: station
+      description: Id of station
+      in: query
+      required: true
+      schema:
+        type: integer
+      example: 769
+    time:
+      name: time
+      description: An hour.
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 24
+      example: 9
+    timeFromAq:
+      name: time_from
+      description: An hour.
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 24
+      example: 9
+    timeToAq:
+      name: time_to
+      description: An hour.
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 24
+      example: 9
+    timeFromReq:
+      name: time_from
+      description: An hour.
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 24
+      example: 9
+    timeToReq:
+      name: time_to
+      description: An hour.
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 24
+      example: 9
+    use:
+      name: use
+      in: query
+      description: Defines the use.
+      required: true
+      schema:
+        enum:
+          - airquality
+          - measure
+          - transgression
+          - annualbalance
+          - map
+        type: string
+      example: airquality
+    usethreshold:
+      name: use
+      description: Defines which thresholds to use.
+      in: query
+      required: true
+      schema:
+        enum:
+          - airquality
+          - measure
+        type: string
+      example: airquality
+    year:
+      name: year
+      description: A 4-digit Year
+      in: query
+      required: false
+      schema:
+        format: YYYY
+        minimum: 2016
+        maxLength: 4
+        minLength: 4
+        type: string
+      example: "2019"
+    yearReq:
+      name: year
+      description: A 4-digit Year
+      in: query
+      required: true
+      schema:
+        format: YYYY
+        minimum: 2016
+        maxLength: 4
+        minLength: 4
+        type: string
+      example: "2019"
+    dataArray:
+      name: dataArray
+      description: An array of datas.
+      in: query
+      required: true
+      schema:
+        type: array
+        items:
+          type: object
+          properties:
+            co:
+              description: Id of component
+            sc:
+              description: Id of scope
+            st:
+              description: Id of station
+  schemas:
+    airquality:
+      type: object
+      properties:
+        station id:
+          type: array
+          items:
+            type: object
+            properties:
+              date start (CET):
                 type: object
-                properties: 
-                  request:
-                    $ref: '#/components/schemas/RequestData'
-                  indices:
-                    $ref: '#/components/schemas/IndexArrayData'
-                  data:
-                    type: object
-                    properties:
-                      request_index:
-                        $ref: '#/components/schemas/StationArrayData'
-                  count:
+                properties:
+                  '0':
+                    description: Date of end of measuring in CET
+                    type: string
+                    example: '2019-02-19 10:00:00'
+                  '1':
+                    description: Airquality index for all components
                     type: integer
                     example: 1
-  /meta/{format}:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/format'
-        - $ref: '#/components/parameters/use'
-        - $ref: '#/components/parameters/lang'
-        - $ref: '#/components/parameters/date_from'
-        - $ref: '#/components/parameters/date_to'
-        - $ref: '#/components/parameters/time_from'
-        - $ref: '#/components/parameters/time_to'
-      summary: Meta-Informationen
-      description: |
-        Meta-Informationen für die andere Schnittstellen.
-        
-        Nicht alle Parameter sind bei allen Schnittstellen nützlich/notwendig, weshalb
-        in folgender Tabelle die passenden `use`-Parameter und restlichen Parameter gelistet
-        werden.
-        
-        | `use`           | Parameter                                              |
-        |-----------------|--------------------------------------------------------|
-        | `airquality`    | `lang`, `date_from`, `date_to`, `time_from`, `time_to` |
-        | `annualbalance` | `lang`                                                 |
-        | `map`           | `lang`                                                 |
-        | `measure`       | `lang`, `date_from`, `date_to`, `time_from`, `time_to` |
-        | `transgression` | `lang`                                                 |
-        
-      responses:
-        '200':
-          description: |
-            Die Ausgabe ist abhängig von dem an `use` übergebenen Wert.
-            
-            Da der Renderer für OpenAPI Specs es nicht unterstützt mehrere Response-Arten
-            korrekt auszugeben kann man entweder unter "Schema" das komplette Schema sehen oder
-            am Seitenende in "Schemas" die Definitionen aller `*MetaResponse`-Objekte betrachten
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/AirQualityMetaResponse'
-                  - $ref: '#/components/schemas/AnnualBalanceMetaResponse'
-                  - $ref: '#/components/schemas/MapMetaResponse'
-                  - $ref: '#/components/schemas/MeasureMetaResponse'
-                  - $ref: '#/components/schemas/TransgressionMetaResponse'
-  /annualbalances/ajaxdata:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/component'
-        - $ref: '#/components/parameters/year'
-        - $ref: '#/components/parameters/lang'
-      summary: Jahresbilanzen
-      responses:
-        '200':
-          description: |
-            Die Ausgabe der Jahresbilanzen.
-            
-            Die Felder in `data` sind je nach angegebenem `component` unterschiedlich. Am besten nachzuvollziehen welche Felder es gibt ist es anhand von `headers` in welchem die Tabellen-Header als Mapping passend zu den Datenfeldern mit ausgegeben werden.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TableData'
-                  headers:
-                    $ref: '#/components/schemas/TableHeaders'
-                  lastDate:
-                    type: string
-                    example: '20.10.2020'
-  /maps/{format}:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/format'
-        - $ref: '#/components/parameters/lang'
-        - $ref: '#/components/parameters/date_from'
-        - $ref: '#/components/parameters/time_from'
-        - $ref: '#/components/parameters/component'
-        - $ref: '#/components/parameters/scope'
-      summary: Karten
-      responses:
-        '200':
-          description: Zusatz/Schwelleninformationen zusätzlich zu den Kartenbildern
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  request:
-                    $ref: '#/components/schemas/RequestData'
-                  data:
-                    type: object
-                    properties:
-                      min:
-                        type: string
-                        example: '0'
-                      max:
-                        type: string
-                        example: '0'
-                  thresholds:
+                    minimum: 0
+                    maximum: 4
+                  '2':
+                    description: Flag if data is incomplete (not all components available)
+                    type: integer
+                    minimum: 0
+                    maximum: 1
+                    example: 1
+                  3 and following:
+                    description: Object for component
                     type: array
                     items:
                       type: object
                       properties:
-                        count:
-                          type: string
-                          example: '0'
-                        name:
-                          type: string
-                          example: 'der Informationschwelle'
-                        value:
+                        '0':
+                          description: Id of component
                           type: integer
-                          format: int32
-                          example: 180
-  /maps/{component}/{scope}/{version}/{component}_{scope}_{version}_{date}.png:
+                          example: 1
+                        '1':
+                          description: The value
+                          type: number
+                          example: 24
+                        '2':
+                          description: Airquality index of this component
+                          type: integer
+                          example: 1
+                          minimum: 0
+                          maximum: 4
+                        '3':
+                          description: >-
+                            Decimal representation of percent in index
+                            thresholds. 0.x is between index 0 and 1, 1.x is
+                            between index 1 and 2...
+                          type: string
+                          format: float
+                          example: "0.25"
+                          minimum: 0
+                          maximum: 5
+    airqualitylimits:
+      type: object
+      properties:
+        station id:
+          properties:
+            '0':
+              description: Minimum date start (CET)
+              example: '2019-02-16 09:00:00'
+              format: 'YYYY-MM-DD HH:MM:SS'
+              type: string
+            '1':
+              description: Maximum date start (CET)
+              example: '2019-02-19 10:00:00'
+              format: 'YYYY-MM-DD HH:MM:SS'
+              type: string
+          type: object
+    annualbalance:
+      type: object
+      properties:
+        '0':
+          description: Id of station
+          example: 6
+          format: integer
+          type: integer
+        '1':
+          description: Id of component
+          example: 3
+          type: integer
+        '2':
+          description: Year
+          format: YYYY
+          example: 2017
+          type: integer
+        '3':
+          description: value
+          example: 35
+          type: integer
+        '4':
+          description: Id of exceedance type (not used)
+          example: 13
+          type: integer
+    component:
+      type: object
+      properties:
+        '0':
+          description: Id of component
+          example: 5
+          format: integer
+          type: integer
+        '1':
+          description: Component code
+          example: NO2
+          type: string
+        '2':
+          description: Component symbol
+          example: NO₂
+          type: string
+        '3':
+          description: Component unit
+          example: µg/m³
+          type: string
+        '4':
+          description: Components name in specified language
+          example: Nitrogen dioxide
+          type: string
+    network:
+      type: object
+      properties:
+        '0':
+          description: Id of network
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Network short code
+          example: BY
+          type: string
+        '2':
+          description: Networks name in specified language
+          example: Bavaria
+          type: string
+    scope:
+      type: object
+      properties:
+        '0':
+          description: Id of scope
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Scope code
+          example: 1SMW
+          type: string
+        '2':
+          description: Scope time base
+          example: hour
+          type: string
+        '3':
+          description: Scope time scope
+          example: 3600
+          format: integer
+          type: integer
+        '4':
+          description: Scope time is max
+          enum:
+            - 0
+            - 1
+          example: 0
+          format: integer
+          type: integer
+        '5':
+          description: Scope name in specified language
+          example: 1-hour average
+          type: string
+    station:
+      type: object
+      properties:
+        '0':
+          description: Id of station
+          example: "769"
+          type: string
+          format: interger
+        '1':
+          description: Code of station
+          example: "DEHH016"
+          type: string
+        '2':
+          description: Name of station
+          example: "Hamburg Billbrook"
+          type: string
+        '3':
+          description: City of station
+          example: "Hamburg"
+          type: string
+        '4':
+          description: Synonym of station
+          example: "21BI"
+          type: string
+        '5':
+          description: Date of first activity
+          example: "1985-01-01T00:00:00.000Z"
+          format: YYYY-MM-DD
+          type: string
+        '6':
+          description: Date of last activity (null when still running)
+          example: "1985-01-01T00:00:00.000Z"
+          format: YYYY-MM-DD
+          type: string
+          nullable: true
+        '7':
+          description: Longitude of station
+          example: "10.0817"
+          type: string
+          format: float
+        '8':
+          description: Latitude of station
+          example: "53.529"
+          type: string
+          format: float
+        '9':
+          description: Id of network
+          example: "6"
+          type: string
+          format: integer
+        '10':
+          description: Id of station setting
+          example: "1"
+          type: string
+          format: integer
+        '11':
+          description: Id of station type
+          example: "2"
+          type: string
+          format: integer
+        '12':
+          description: Code of network
+          example: "HH"
+          type: string
+        '13':
+          description: Name of network in specified language
+          example: "Hamburg"
+          type: string
+        '14':
+          description: Name of station setting in specified language
+          example: "urban area"
+          type: string
+        '15':
+          description: Short name of station setting in specified language
+          example: "urban"
+          type: string
+        '16':
+          description: Name of station type in specified language
+          example: "industry"
+          type: string
+        '17':
+          description: Street of station
+          example: "Lauchhammerstr."
+          type: string
+        '18':
+          description: Street number of station
+          example: "23"
+          type: string
+        '19':
+          description: ZIP code of station
+          example: "04910"
+          type: string
+    stationsetting:
+      type: object
+      properties:
+        '0':
+          description: Id of station setting
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Name of station setting in specified language
+          example: "suburban area"
+          type: string
+        '2':
+          description: Short name of station setting in specified language
+          example: "suburban"
+          type: string
+    stationtype:
+      type: object
+      properties:
+        '0':
+          description: Id of station type
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Name of station type in specified language
+          example: "industry"
+          type: string
+    threshold:
+      type: object
+      properties:
+        '0':
+          description: Id of threshold
+          example: 5
+          format: integer
+          type: integer
+        '1':
+          description: Id of component
+          example: 5
+          type: integer
+        '2':
+          description: Id of scope
+          example: 1
+          type: integer
+        '3':
+          description: Threshold minimum value
+          example: 201
+          type: integer
+        '4':
+          description: Threshold maximum value
+          example: 1000
+          type: integer
+        '5':
+          description: Threshold index
+          example: 4
+          type: integer
+    transgression:
+      type: object
+      properties:
+        '0':
+          description: Id of station
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Date of first activity
+          example: '2019-01-01'
+          format: YYYY-MM-DD
+          type: string
+        '2':
+          description: Date of recent activity
+          example: '2019-01-01'
+          format: YYYY-MM-DD
+          type: string
+        '3':
+          description: Sum of values of year
+          example: 24
+          format: integer
+          type: integer
+        '4':
+          description: Value of January
+          example: 2
+          format: integer
+          type: integer
+        '5':
+          description: Value of Feburary
+          example: 2
+          format: integer
+          type: integer
+        '6':
+          description: Value of March
+          example: 2
+          format: integer
+          type: integer
+        '7':
+          description: Value of April
+          example: 2
+          format: integer
+          type: integer
+        '8':
+          description: Value of May
+          example: 2
+          format: integer
+          type: integer
+        '9':
+          description: Value of June
+          example: 2
+          format: integer
+          type: integer
+        '10':
+          description: Value of July
+          example: 2
+          format: integer
+          type: integer
+        '11':
+          description: Value of August
+          example: 2
+          format: integer
+          type: integer
+        '12':
+          description: Value of September
+          example: 2
+          format: integer
+          type: integer
+        '13':
+          description: Value of October
+          example: 2
+          format: integer
+          type: integer
+        '14':
+          description: Value of November
+          example: 2
+          format: integer
+          type: integer
+        '15':
+          description: Value of December
+          example: 2
+          format: integer
+          type: integer
+    transgressiontype:
+      type: object
+      properties:
+        '0':
+          description: Id of exceedance type
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Name of exceedance type in specified language
+          example: Jahresmittelwert in µg/m³
+          type: string
+    measure:
+      type: object
+      properties:
+        '0':
+          description: Id of component
+          example: 2
+          type: integer
+        '1':
+          description: Id of scope
+          example: 2
+          type: integer
+        '2':
+          description: Value of measurement
+          example: 112.4
+          nullable: true
+          type: number
+        '3':
+          description: Date end (CET)
+          example: '2019-01-01 02:00:00'
+          format: 'YYYY-MM-DD HH:mm:ss'
+          type: string
+        '4':
+          description: Air quality index
+          example: 1
+          type: integer
+          nullable: true
+    measurelimit:
+      type: object
+      description: 'The index is a concatination of scope id, component id and station id.'
+      properties:
+        '0':
+          description: Id of scope
+          example: 2
+          format: integer
+          type: integer
+        '1':
+          description: Id of component
+          example: 2
+          format: integer
+          type: integer
+        '2':
+          description: Id of station
+          example: 2
+          format: integer
+          type: integer
+        '3':
+          description: Mimimum datetime of start (CET)
+          example: 2019-01-02T11:00:00.000Z
+          format: 'YYYY-MM-DD HH:mm:ss'
+          type: string
+        '4':
+          description: Maximum datetime of start (CET)
+          example: 2019-01-02T12:00:00.000Z
+          format: 'YYYY-MM-DD HH:mm:ss'
+          type: string
+    limit:
+      type: object
+      description: 'The index is a concatination of scope id, component id and station id.'
+      properties:
+        '0':
+          description: Id of scope
+          example: "1"
+          format: integer
+          type: string
+        '1':
+          description: Id of component
+          example: "1"
+          format: integer
+          type: string
+        '2':
+          description: Id of station
+          example: "120"
+          format: integer
+          type: string
+        '3':
+          description: Minimum datetime of start (CET)
+          example: "2016-01-01T11:00:00.000Z"
+          format: 'YYYY-MM-DD HH:mm:ss'
+          type: string
+        '4':
+          description: Maximum datetime of start (CET)
+          example: "2019-09-02T11:00:00.000Z"
+          format: 'YYYY-MM-DD HH:mm:ss'
+          type: string
+paths:
+  /airquality/json:
     get:
-      servers:
-        - url: https://www.umweltbundesamt.de/sites/default/files/w21ad_luftdaten
+      description: This entry point returns airquality data for the provided parameters.
       parameters:
-        - name: component
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 'O3'
-          description: Name des Schadstoffs nachdem gefiltert werden soll
-        - name: scope
-          in: path
-          required: true
-          schema:
-            type: string
-            example: '1SMW_MAX'
-          description: Name der Auswertungsart nach der gefiltert werden soll
-        - name: version
-          in: path
-          required: true
-          schema:
-            type: string
-            enum:
-              - v1
-            example: v1
-          description: Schnittstellenversion
-        - name: date
-          in: path
-          required: true
-          schema:
-            type: string
-            format: 'YYYYMMDD'
-            example: '20210829'
-          description: Datum des Tages für den das Bild geladen werden soll
-      summary: Kartenbild
+        - $ref: '#/components/parameters/dateFromReq'
+        - $ref: '#/components/parameters/timeFromReq'
+        - $ref: '#/components/parameters/dateToReq'
+        - $ref: '#/components/parameters/timeToReq'
+        - $ref: '#/components/parameters/station'
       responses:
         '200':
-          description: Karte für Schadstoffbelastung des angegebenen Datums
-          content:
-            image/png:
-              example: https://www.umweltbundesamt.de/sites/default/files/w21ad_luftdaten/maps/O3/1SMW_MAX/v1/O3_1SMW_MAX_v1_20210829.png
-  /measures/{format}:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/format'
-        - $ref: '#/components/parameters/date_from'
-        - $ref: '#/components/parameters/date_to'
-        - $ref: '#/components/parameters/time_from'
-        - $ref: '#/components/parameters/time_to'
-        - $ref: '#/components/parameters/component'
-        - $ref: '#/components/parameters/scope'
-      summary: Messungen
-      responses:
-        '200':
-          description: Ausgabe der Messdaten
+          description: successful operation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  request:
-                    $ref: '#/components/schemas/RequestData'
                   indices:
-                    $ref: '#/components/schemas/IndexObjectData'
-                  data:
-                    $ref: '#/components/schemas/MeasuresData'
-  /transgressions/ajaxdata:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/component'
-        - $ref: '#/components/parameters/year'
-        - $ref: '#/components/parameters/lang'
-      summary: Überschreitungen
-      responses:
-        '200':
-          description: |
-            Die Ausgabe der Überschreitungen.
-            
-            Die Felder in `data` sind je nach angegebenem `component` unterschiedlich. Am besten nachzuvollziehen welche Felder es gibt ist es anhand von `headers` in welchem die Tabellen-Header als Mapping passend zu den Datenfeldern mit ausgegeben werden.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
+                    description: Description of indices
+                    example:
+                      station id: null
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TableData'
-                  headers:
-                    $ref: '#/components/schemas/TableHeaders'
-                  lastDate:
-                    type: string
-                    example: '20.10.2020'
-  /airquality/{format}:
+                      $ref: '#/components/schemas/airquality'
+                    example:
+                      - '6':
+                        '2019-01-01 00:00:00':
+                          '0': '2019-01-01 01:00:00'
+                          '1': 0
+                          '2': 0
+                          '3':
+                            '0':
+                              '0': 3
+                              '1': 20
+                              '2': 0
+                              '3': 0.333
+        '422':
+          description: required parameter is missing.
+      summary: Get airquality data
+      tags:
+        - airquality
+  /airquality/limits:
     get:
-      parameters:
-        - $ref: '#/components/parameters/format'
-        - $ref: '#/components/parameters/lang'
-        - $ref: '#/components/parameters/date_from'
-        - $ref: '#/components/parameters/date_to'
-        - $ref: '#/components/parameters/time_from'
-        - $ref: '#/components/parameters/time_to'
-      summary: Luftqualität
+      description: This entry point returns the date limits of airquality stations.
       responses:
         '200':
-          description: |
-            Ausgabe der Luftqualitätsdaten.
-            
-            Die Felder in `data` werden mithilfe der Struktur innerhalb `indices` beschrieben, hiermit sind die Felder und Werte am besten ersichtlich.
-            
-            (Die hier gezeigten Beispieldaten in `indices` entsprechen nicht der Schnittstelle, es sind Daten anderer Schnittstellen die hier als generelles Beispiel genutzt werden)
+          description: successful operation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  request:
-                    $ref: '#/components/schemas/RequestData'
-                  data:
-                    $ref: '#/components/schemas/AirQualityData'
                   indices:
-                    $ref: '#/components/schemas/IndexObjectData'
-
-components:
-  parameters:
-    format:
-      name: format
-      in: path
-      required: true
-      schema:  
-        type: string
-        enum:
-          - json
-          - xml
-      description: Rückgabeformat, XML wird zwar unterstützt aber keine Schnittstelle hat dies implementiert
-    use:
-      name: use
-      in: query
-      schema:
-        type: string
-        enum:
-          - airquality
-          - annualbalance
-          - map
-          - measure
-          - transgression
-      description: Angabe der genutzten Schnittstelle (vermutlich um Daten evtl. anzupassen)
-    lang:
-      name: lang
-      in: query
-      schema:
-        type: string
-        enum:
-          - de
-          - en
-      description: Sprache in der die Datensätze zurückgegeben werden
-    date_from:
-      name: date_from
-      in: query
-      schema:
-        type: string
-        format: date
-        example: '2021-08-14'
-      description: Startdatum für Datensätze
-    date_to:
-      name: date_to
-      in: query
-      schema:
-        type: string
-        format: date
-        example: '2021-08-15'
-      description: Enddatum für Datensätze
-    time_from:
-      name: time_from
-      in: query
-      schema:
-        type: integer
-        format: int32
-        minimum: 1
-        maximum: 24
-        example: 1
-      description: Startstundenzeit für Datensätze
-    time_to:
-      name: time_to
-      in: query
-      schema:
-        type: integer
-        format: int32
-        minimum: 1
-        maximum: 24
-        example: 24
-      description: Endstundenzeit für Datensätze
-    component:
-      name: component
-      in: query
-      required: true
-      schema:
-        type: integer
-        format: int32
-        example: 1
-      description: Luftschadstoff nachdem gefiltert werden soll
-    scope:
-      name: scope
-      in: query
-      required: true
-      schema:
-        type: integer
-        format: int32
-        example: 1
-      description: Auswertungsart nach der gefiltert werden soll
-    year:
-      name: year
-      in: query
-      required: true
-      schema:
-        type: integer
-        format: int32
-        example: 2019
-      description: Jahr nach dem gefiltert werden soll
-  schemas:
-    RequestData:
-      type: object
-      properties: {}
-      description: An die Schnittstelle übergebenen Parameter
-    IndexArrayData:
-      type: array
-      items: {}
-      description: Beschreibung der Datenstruktur in `data` als Array
-      example:
-        - station id
-        - station code
-        - station name
-        - station city
-        - station synonym
-        - station active from
-        - station active to
-        - station longitude
-        - station latitude
-        - network id
-        - station setting id
-        - station type id
-        - network code
-        - network name
-        - station setting name
-        - station setting short name
-        - station type name
-        - station street
-        - station street nr
-        - station zip code
-    IndexObjectData:
-      type: object
-      properties: {}
-      example:
-        data:
-          'station id':
-            'date start':
-              - 'component id'
-              - 'scope id'
-              - 'value'
-              - 'date end'
-              - 'index'
-    StationArrayData:
-      type: array
-      items:
-        nullable: true
-        oneOf:
-          - type: string
-          - type: integer
-      example: 
-        - '7'
-        - DEBB007
-        - Elsterwerda, 1992-2020
-        - Elsterwerda
-        - ELBA
-        - '1992-09-01'
-        - '13.5268'
-        - '51.4627'
-        - '4'
-        - '2'
-        - '1'
-        - BB
-        - Brandenburg
-        - vorstädtisches Gebiet
-        - vorstädtisch
-        - Hintergrund
-        - Lauchhammerstr.
-        - ''
-        - '04910'
-      description: Stationsdaten als Array, sortiert nach der Angabe in `indices`
-    ComponentArrayData:
-      type: array
-      items:
-        type: string
-      example:
-        - '1'
-        - PM10
-        - PM₁₀
-        - µg/m³
-        - Feinstaub
-    ScopeArrayData:
-      type: array
-      items:
-        type: string
-      example:
-        - '1'
-        - 1TMW
-        - day
-        - '86400'
-        - '0'
-        - Tagesmittel
-    AirQualityLimitArrayData:
-      type: array
-      items:
-        type: string
-      example:
-        - '7'
-        - '2016-01-01 00:00:00'
-        - '2021-01-18 12:00:00'
-    AnnualBalanceLimitArrayData:
-      type: array
-      items:
-        oneOf:
-          - type: string
-          - type: integer
-      example:
-        - 2002
-        - 1
-    MeasureLimitArrayData:
-      type: array
-      items:
-        type: string
-      example:
-        - '1'
-        - '1'
-        - '52'
-        - '2016-01-01 11:00:00'
-        - '2021-08-14 11:00:00'
-    NetworkArrayData:
-      type: array
-      items:
-        type: string
-      example:
-        - '1'
-        - BW
-        - Baden-Württemberg
-    XrefArrayData:
-      type: array
-      items:
-        type: string
-      example:
-        - '1'
-        - '1'
-        - '1'
-        - '1'
-        - '0'
-
-    TableData:
-      type: object
-      properties:
-        netname:
-          type: string
-          example: 'Baden-Württemberg'
-        stacode:
-          type: string
-          example: 'DEBW004'
-        staname:
-          type: string
-          example: 'Eggenstein'
-        stasetname:
-          type: string
-          example: 'ländlich stadtnah'
-        statypname:
-          type: string
-          example: 'Hintergrund'
-    TableHeaders:
-      type: object
-      properties:
-        netname:
-          type: string
-          example: 'net_name'
-        stacode:
-          type: string
-          example: 'sta_code'
-        staname:
-          type: string
-          example: 'sta_name'
-        stasetname:
-          type: string
-          example: 'staset_name'
-        statypname:
-          type: string
-          example: 'statyp_name'
-    
-    MeasuresData:
-      type: object
-      properties: {}
-      example:
-        '21':
-          '2021-08-14 11:00:00':
-            - 3
-            - 3
-            - 113
-            - '2021-08-14 12:00:00'
-            - '6'
-            
-    AirQualityData:
-      type: object
-      properties: {}
-      example:
-        '21':
-          '2021-08-11 00:00:00':
-            - 0
-            - 0
-            -
-              - 1
-              - 9
-              - 0
-              - '0.450'
-            -
-              - 3
-              - 47
-              - 0
-              - '0.783'
-            -
-              - 5
-              - 6
-              - 0
-              - '0.300'
-
-    AirQualityMetaResponse:
-      type: object
-      properties: 
-        request:
-          $ref: '#/components/schemas/RequestData'
-        components:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ComponentArrayData'
-        scopes:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ScopeArrayData'
-        limits:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/AirQualityLimitArrayData'
-        stations:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/StationArrayData'
-        networks:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/NetworkArrayData'
-    AnnualBalanceMetaResponse:
-      type: object
-      properties:
-        request:
-          $ref: '#/components/schemas/RequestData'
-        limits:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/AnnualBalanceLimitArrayData'
-        components:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ComponentArrayData'
-        stations:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/StationArrayData'
-        networks:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/NetworkArrayData'
-        years:
-          type: array
-          items:
-            type: string
-          example:
-            - '2002'
-            - '2007'
-            - '2008'
-            - '2009'
-            - '2010'
-            - '2011'
-            - '2012'
-            - '2013'
-            - '2014'
-            - '2015'
-            - '2016'
-            - '2017'
-            - '2018'
-            - '2019'
-            - '2020'
-            - '2003'
-            - '2004'
-            - '2005'
-            - '2006'
-            - '2000'
-            - '2001'
-    MapMetaResponse:
-      type: object
-      properties:
-        request:
-          $ref: '#/components/schemas/RequestData'
-        components:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ComponentArrayData'
-        scopes:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ScopeArrayData'
-        xref:
-          type: array
-          items:
-            $ref: '#/components/schemas/XrefArrayData'
-    MeasureMetaResponse:
-      type: object
-      properties:
-        request:
-          $ref: '#/components/schemas/RequestData'
-        components:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ComponentArrayData'
-        scopes:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ScopeArrayData'
-        limits:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/MeasureLimitArrayData'
-        stations:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/StationArrayData'
-        networks:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/NetworkArrayData'
-        xref:
-          type: array
-          items:
-            $ref: '#/components/schemas/XrefArrayData'
-    TransgressionMetaResponse:
-      type: object
-      properties:
-        request:
-          $ref: '#/components/schemas/RequestData'
-        components:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/ComponentArrayData'
-        networks:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/NetworkArrayData'
-        stations:
-          type: object
-          properties:
-            index:
-              $ref: '#/components/schemas/StationArrayData'
+                    description: Description of indices
+                    example:
+                      station_id:
+                        '0': limit date start min (CET)
+                        '1': limit date start max (CET)
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/airqualitylimits'
+                    example:
+                      - '30':
+                        '0': '2016-01-01 00:00:00'
+                        '1': '2019-09-03 11:00:00'
+      summary: Get airquality date limits
+      tags:
+        - airquality
+  /annualbalances/json:
+    get:
+      description: This entry point returns the data of annual tabulations
+      parameters:
+        - $ref: '#/components/parameters/componentReq'
+        - $ref: '#/components/parameters/yearReq'
+        - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  indices:
+                    type: array
+                    description: Description of indices
+                    example:
+                      - '0': station id
+                      - '1': component id
+                      - '2': year
+                      - '3': value
+                      - '4': transgression type
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/annualbalance'
+                type: object
+        '422':
+          description: required parameter is missing.
+      summary: Get annualtabulation
+      tags:
+        - annualtabulation
+  /components/json:
+    get:
+      description: This entry point returns a list of all components.
+      parameters:
+          - $ref: '#/components/parameters/lang'
+          - $ref: '#/components/parameters/index'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  '5':
+                    '0': 5
+                    '1': NO2
+                    '2': NO₂
+                    '3': µg/m³
+                    '4': Nitrogen dioxide
+                  NO2:
+                    '0': 5
+                    '1': NO2
+                    '2': NO₂
+                    '3': µg/m³
+                    '4': Nitrogen dioxide
+                properties:
+                  id|code:
+                    $ref: '#/components/schemas/component'
+      summary: Get all components
+      tags:
+        - metadata
+  /measures/json:
+    get:
+      description: This entry point returns measures for the provided parameters.
+      parameters:
+        - $ref: '#/components/parameters/dateFromReq'
+        - $ref: '#/components/parameters/timeFromReq'
+        - $ref: '#/components/parameters/dateToReq'
+        - $ref: '#/components/parameters/timeToReq'
+        - $ref: '#/components/parameters/station'
+        - $ref: '#/components/parameters/component'
+        - $ref: '#/components/parameters/scope'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  indices:
+                    type: array
+                    description: Description of indices
+                    example:
+                      - station id:
+                        date start:
+                          '0': component id
+                          '1': scope id
+                          '2': value
+                          '3': date end
+                          '4': index
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        station id:
+                          type: object
+                          description: The id of the station
+                          properties:
+                            date start (CET):
+                              type: array
+                              description: >-
+                                The datetime in CET when the measuring was
+                                started
+                              items:
+                                $ref: '#/components/schemas/measure'
+                      example:
+                        '7':
+                          '2019-01-01 00:00:00':
+                            '0': 1
+                            '1': 6
+                            '2': 17.1
+                            '3': '2019-01-01 01:00:00'
+                            '4': null
+        '422':
+          description: required parameter is missing.
+      summary: Get all measurements
+      tags:
+        - measurements
+  /measures/limits:
+    get:
+      description: This entry point returns all limits of measurements
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  indices:
+                    type: object
+                    description: Description of indices
+                    example:
+                      'combination of scope id, component id, station id':
+                        '0': scope id
+                        '1': component id
+                        '2': station id
+                        '3': limit date start min (CET)
+                        '4': limit date start max (CET)
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        concatId:
+                          $ref: '#/components/schemas/measurelimit'
+                      example:
+                        '11620':
+                          '0': 1
+                          '1': 1
+                          '2': 620
+                          '3': '2016-01-01 11:00:00'
+                          '4': '2019-09-01 11:00:00'
+      summary: Get measurement date limits
+      tags:
+        - measurements
+  /networks/json:
+    get:
+      description: This entry point returns a list of all networks.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/index'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  indices:
+                    type: array
+                    description: Description of indices
+                    example:
+                      - network id
+                      - network code
+                      - network name
+                  data:
+                    type: object
+                    properties:
+                      id|code:
+                        $ref: '#/components/schemas/network'
+                    example:
+                      '1':
+                        '0': 2
+                        '1': BY
+                        '2': Bayern
+                      BY:
+                        '0': 2
+                        '1': BY
+                        '2': Bayern
+                type: object
+      summary: Get all networks
+      tags:
+        - metadata
+  /scopes/json:
+    get:
+      description: The entry point returns a list of all scopes.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/index'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                example:
+                  '2':
+                    '0': 2
+                    '1': 1SMW
+                    '2': hour
+                    '3': 3600
+                    '4': 0
+                    '5': 1-hour average
+                  1SMW:
+                    '0': 2
+                    '1': 1SMW
+                    '2': hour
+                    '3': 3600
+                    '4': 0
+                    '5': 1-hour average
+                properties:
+                  id|code:
+                    $ref: '#/components/schemas/scope'
+                type: object
+      summary: Get all scopes
+      tags:
+        - metadata
+  /stationsettings/json:
+    get:
+      description: This entry point returns a list of all station settings.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/stationsetting'
+                type: array
+      summary: Get all station settings
+      tags:
+        - metadata
+  /stationtypes/json:
+    get:
+      description: This entry point returns a list of all station types.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/stationtype'
+                type: array
+      summary: Get all station types
+      tags:
+        - metadata
+  /thresholds/json:
+    get:
+      description: This entry point returns a list of all thresholds
+      parameters:
+        - $ref: '#/components/parameters/usethreshold'
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/component'
+        - $ref: '#/components/parameters/scope'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/threshold'
+                type: array
+        '422':
+          description: required parameter is missing.
+      summary: Get all thresholds
+      tags:
+        - metadata
+  /transgressions/json:
+    get:
+      description: Returns exceedances data
+      parameters:
+        - $ref: '#/components/parameters/componentReq'
+        - $ref: '#/components/parameters/yearReq'
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/index'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  indices:
+                    type: object
+                    description: Description of indices
+                    example:
+                      '0': station id,
+                      '1': day_frist,
+                      '2': day_recent,
+                      '3': value of year,
+                      '4': 4-15 values of month
+                  data:
+                    items:
+                      $ref: '#/components/schemas/transgression'
+                    type: array
+        '422':
+          description: required parameter is missing.
+      summary: Get exceedances data
+      tags:
+        - exceedances
+  /transgressiontypes/json:
+    get:
+      description: Returns all exceedances types
+      parameters:
+        - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/transgressiontype'
+      summary: Get all exceedances types
+      tags:
+        - metadata
+  /meta/json:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/use'
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/dateFromAq'
+        - $ref: '#/components/parameters/dateToAq'
+        - $ref: '#/components/parameters/timeFromAq'
+        - $ref: '#/components/parameters/timeToAq'
+      summary: Get combined metadata for use
+      description: >-
+        The use parameter defines what meta data should be returned. E.g. if you
+        set use to airquality, meta data of airquality is returned.
+      tags:
+        - metadata
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  components:
+                    description: >-
+                      components (available for use = airquality, map,
+                      transgression, annualbalance, measure)
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id of component:
+                          $ref: '#/components/schemas/component'
+                      example:
+                        '5':
+                          '0': 5
+                          '1': NO2
+                          '2': NOÃ¢â€šâ€š
+                          '3': Ã‚Âµg/mÃ‚Â³
+                          '4': Nitrogen dioxid
+                  scopes:
+                    description: 'scopes (available for use = airquality, map, measure)'
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id of scope:
+                          $ref: '#/components/schemas/scope'
+                      example:
+                        '2':
+                          '0': 2
+                          '1': 1SMW
+                          '2': hour
+                          '3': 3600
+                          '4': 0
+                          '5': 1-hour average
+                  networks:
+                    description: >-
+                      networks (available for use = air quality, transgression,
+                      annualbalance, measure)
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id of network:
+                          $ref: '#/components/schemas/network'
+                      example:
+                        '2':
+                          '0': 2
+                          '1': BY
+                          '2': Bavaria
+                  stations:
+                    description: >-
+                      stations (available for use = airquality, transgression,
+                      annualbalance, measure)
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id of station:
+                          $ref: '#/components/schemas/station'
+                      example:
+                        '769':
+                          '0': 769
+                          '1': DEHH016
+                          '2': Hamburg Billbrook
+                          '3': Hamburg
+                          '4': 21BI
+                          '5': 1985-01-01T00:00:00.000Z
+                          '6': 1985-01-01T00:00:00.000Z
+                          '7': 10.0817
+                          '8': 53.529
+                          '9': 6
+                          '10': 1
+                          '11': 2
+                          '12': HH
+                          '13': Hamburg
+                          '14': urban area
+                          '15': urban
+                          '16': industry
+                  limits-1:
+                    description: 'Limits (available for use = airquality, measure)'
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        'concat of component id, scope id, station id':
+                          $ref: '#/components/schemas/limit'
+                      example:
+                        '11120':
+                          '0': 1
+                          '1': 1
+                          '2': 120
+                          '3': 2016-01-01T11:00:00.000Z
+                          '4': 2019-09-02T11:00:00.000Z
+                  limits-2:
+                    description: Limits (available for use = annualbalance)
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        '0':
+                          description: Year
+                          example: 2004
+                          type: integer
+                          minLength: 4
+                          maxLength: 4
+                        '1':
+                          description: Id of component
+                          example: 1
+                          type: integer
+                  xref:
+                    description: >-
+                      Cross reference component/scope (available for use = map,
+                      measure)
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        '0':
+                          description: Id of component
+                          example: 2
+                          type: integer
+                        '1':
+                          description: Id of scope
+                          example: 4
+                          type: integer
+                        '2':
+                          description: >-
+                            Flag if this combination of component and scope has
+                            a map
+                          example: 1
+                          type: integer
+                          minimum: 0
+                          maximum: 1
+                        '3':
+                          description: >-
+                            Flag if this combination of component and scope has
+                            an alternative map
+                          example: 0
+                          type: integer
+                          minimum: 0
+                          maximum: 1
+                        '4':
+                          description: >-
+                            Flag if this combination of component and scope is
+                            an hourly value
+                          example: 1
+                          type: integer
+                          minimum: 0
+                          maximum: 1
+        '422':
+          description: required parameter is missing.
