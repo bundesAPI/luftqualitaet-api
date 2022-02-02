@@ -823,11 +823,11 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/annualbalance'
                 properties:
                   indices:
                     type: array
+                    items:
+                      type: object
                     description: Description of indices
                     example:
                       - '0': station id
@@ -900,6 +900,8 @@ paths:
                 properties:
                   indices:
                     type: array
+                    items:
+                      type: object
                     description: Description of indices
                     example:
                       - station id:
@@ -920,7 +922,7 @@ paths:
                           properties:
                             date start (CET):
                               type: array
-                              description: >-
+                              description:
                                 The datetime in CET when the measuring was
                                 started
                               items:
@@ -993,6 +995,8 @@ paths:
                 properties:
                   indices:
                     type: array
+                    items:
+                      type: string
                     description: Description of indices
                     example:
                       - network id
