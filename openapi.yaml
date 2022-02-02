@@ -823,6 +823,8 @@ paths:
           content:
             application/json:
               schema:
+                items:
+                  $ref: '#/components/schemas/annualbalance'
                 properties:
                   indices:
                     type: array
@@ -892,6 +894,8 @@ paths:
           content:
             application/json:
               schema:
+                items:
+                  $ref: '#/components/schemas/measure'
                 type: object
                 properties:
                   indices:
@@ -984,6 +988,8 @@ paths:
           content:
             application/json:
               schema:
+                items:
+                  $ref: '#/components/schemas/network'
                 properties:
                   indices:
                     type: array
@@ -992,7 +998,7 @@ paths:
                       - network id
                       - network code
                       - network name
-                  items:
+                  data:
                     type: object
                     properties:
                       id|code:
