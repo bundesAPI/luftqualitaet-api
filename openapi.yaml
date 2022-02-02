@@ -992,7 +992,7 @@ paths:
                       - network id
                       - network code
                       - network name
-                  data:
+                  items:
                     type: object
                     properties:
                       id|code:
